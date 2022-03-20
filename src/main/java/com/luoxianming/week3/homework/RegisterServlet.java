@@ -1,11 +1,39 @@
 package com.luoxianming.week3.homework;
 
 import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.*;
 
+@WebServlet(
+        urlPatterns = "/register",
+        loadOnStartup = 1
+)
 public class RegisterServlet extends HttpServlet {
+    Connection conn = null;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ServletContext context = getServletContext();
+        String driver = context.getInitParameter("driver");
+        String url = context.getInitParameter("url");
+        String username = context.getInitParameter("username");
+        String password = context.getInitParameter("password");
+
+        try {
+            Class.forName(driver);
+            conn = DriverManager.getConnection(url,username,password);
+            System.out.println("Connection --> "+conn);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -19,12 +47,73 @@ public class RegisterServlet extends HttpServlet {
         String gender = request.getParameter("gender");
         String birthdate = request.getParameter("birthdate");
 
+        response.setContentType("text/html;charset=utf-8");
         PrintWriter out = response.getWriter();
-        out.println("<br/>username:"+username);
-        out.println("<br/>password:"+password);
-        out.println("<br/>email:"+email);
-        out.println("<br/>gender:"+gender);
-        out.println("<br/>birthdate:"+birthdate);
+        out.println("<html>");
+        out.println("   <head>");
+        out.println("       <title>UsersTable</title>");
+        out.println("   </head>");
+        out.println("   <body>");
+        out.println("       <table width=480 border=1 align=center>");
+        out.println("           <caption>Users</caption>");
+        out.println("           <tr>");
+        out.println("               <td>ID</td>");
+        out.println("               <td>UserName</td>");
+        out.println("               <td>PassWord</td>");
+        out.println("               <td>Email</td>");
+        out.println("               <td>Gender</td>");
+        out.println("               <td>BirthDate</td>");
+        out.println("           </tr>");
+
+        String sql1 = "INSERT INTO Users VALUES(?,?,?,?,?,?)";
+        String sql2 = "SELECT * FROM Users";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql1);
+            Statement stmt = conn.createStatement();
+            ps.setInt(1,1);
+            ps.setString(2,username);
+            ps.setString(3,password);
+            ps.setString(4,email);
+            ps.setString(5,gender);
+            ps.setDate(6, Date.valueOf(birthdate));
+            ps.executeUpdate();
+            ResultSet rs = stmt.executeQuery(sql2);
+            while (rs.next()){
+                int id = rs.getInt("id");
+                String username1 = rs.getString("username");
+                String password1 =rs.getString("password");
+                String email1 = rs.getString("email");
+                String gender1 = rs.getString("gender");
+                String birthdate1 = rs.getString("birthdate");
+                out.println("           <tr>");
+                out.println(               "<td>"+id+"</td>");
+                out.println(               "<td>"+username1+"</td>");
+                out.println(               "<td>"+password1+"</td>");
+                out.println(               "<td>"+email1+"</td>");
+                out.println(               "<td>"+gender1+"</td>");
+                out.println(               "<td>"+birthdate1+"</td>");
+                out.println("           </tr>");
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        out.println("       </table>");
+        out.println("   </body>");
+        out.println("</html>");
         out.close();
+
+
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
