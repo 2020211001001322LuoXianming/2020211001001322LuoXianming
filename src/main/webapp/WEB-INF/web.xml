@@ -25,6 +25,7 @@
         <servlet-name>HelloWorld</servlet-name>
         <servlet-class>com.luoxianming.week2.homework.HelloWorldServlet</servlet-class>
     </servlet>
+
     <!--
     <servlet>
         <servlet-name>RegisterServlet</servlet-name>
