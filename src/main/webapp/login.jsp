@@ -15,4 +15,10 @@
     Password:<input name="password" type="password" size="20"><br>
     <input name="login" type="submit" size="10" value="Login">
 </form>
+<%
+    if (!(request.getAttribute("message") == null)){
+        //error
+        out.println(request.getAttribute("message"));
+    }
+%>
 <%@include file="footer.jsp"%>
